@@ -128,7 +128,15 @@ async def processMessage(source, content_lower, user_id):
                 await response_method("Nope!")
         else:
             user_attempts[user_id] += 1
-            await response_method(f"Not Quite! Correct words: {answerFoundList}")
+            GuessLeftStatement = ""
+            match(user_attempts[user_id]):
+                case 2:
+                    GuessLeftStatement = "You have one guess left."
+                case 3:
+                    GuessLeftStatement = "You're out of guesses."
+                case _:
+                    GuessLeftStatent = ""
+            await response_method(f"Not Quite! {GuessLeftStatent} Correct words: {answerFoundList}")
 
     await asyncio.to_thread(print, user_attempts)
 
