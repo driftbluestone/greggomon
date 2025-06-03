@@ -2,3 +2,6 @@ flowing
 ore
 hex_cable
 bucket
+refined
+crushed
+pure

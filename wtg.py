@@ -40,6 +40,8 @@ def load_data():
         SUBCOMMANDS = json.load(file)
 load_data()
 
+skiplist = []
+
 @bot.event
 async def on_ready():
     try:
@@ -92,11 +94,8 @@ async def sendImage(target, msgCont):
 
 @bot.tree.command(name="skip", description="Skips the current image if it's been 10 minutes since it was sent. Requires 3 people to skip.")
 async def skip(interaction: discord.Interaction):
-    global TIME, user_attempts, item
+    global TIME, user_attempts, item, skiplist
     processed=""
-    try:
-        if skiplist: pass
-    except: skiplist = []
     if TIME+1800 <= int(time.time()):
         await interaction.response.send_message(f"The answer was:\n{uppervolt(item.title())}")
         await sendImage(interaction, "")
@@ -129,9 +128,9 @@ async def info(interaction: discord.Interaction, sub: typing.Optional[str]):
         try:
             embed=discord.Embed(title=sub.title(), description=SUBCOMMANDS[sub])
         except:
-            await interaction.response.send_message("", ephemeral=True)
+            await interaction.response.send_message("Invalid subcommand.", ephemeral=True)
             return
-    await interaction.response.send_message(embed=embed, ephemeral=True)
+    await interaction.response.send_message(embed=embed)
 
 @bot.tree.command(name="quit", description="**Admin Only.** Kills the bot.")
 async def quit_bot(ctx: discord.Interaction):
