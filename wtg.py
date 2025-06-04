@@ -1,6 +1,6 @@
 # CONFIG
-DIR ="C:/wtg-testing"
-TOKEN =""
+DIR = "C:/wtg-testing"
+TOKEN = ""
 import discord # type: ignore
 import random, asyncio, shutil, json, typing, math, time
 from discord.ext import commands # type: ignore 
@@ -63,11 +63,12 @@ def uppervolt(text):
     return text
 
 async def sendImage(target, msgCont):
-    global image, item, itemAnswerList, totalGuesses, user_attempts, TIME, allAnswerFoundList
+    global image, item, itemAnswerList, totalGuesses, user_attempts, TIME, allAnswerFoundList, skiplist
     totalGuesses = 0
 
     user_attempts = {}
-    allAnswerFoundList=[]
+    allAnswerFoundList = []
+    skiplist = []
 
     item = random.choice(IMAGESET)
     for k in REDUCEPROBLIST:
@@ -92,22 +93,22 @@ async def sendImage(target, msgCont):
     else:
         await target.response.send_message(msgCont, file=file)
 
-@bot.tree.command(name="skip", description="Skips the current image if it's been 10 minutes since it was sent. Requires 3 people to skip.")
+@bot.tree.command(name="skip", description="Skips the current image if it's been 5 minutes since it was sent. Requires 2 people to skip.")
 async def skip(interaction: discord.Interaction):
     global TIME, user_attempts, item, skiplist
     processed=""
     if TIME+1800 <= int(time.time()):
         await interaction.response.send_message(f"The answer was:\n{uppervolt(item.title())}")
         await sendImage(interaction, "")
-    elif TIME+600 <= int(time.time()):
+    elif TIME+300 <= int(time.time()):
         if interaction.user.id not in skiplist:
             try:
                 if not user_attempts[str(interaction.user.id)] == 3:
                     await interaction.response.send_message("You have to have used all 3 guesses to /skip.",ephemeral=True)
                 else:
                     skiplist.append(interaction.user.id)
-                    processed=f"Skip processed. {len(skiplist)}/3.\n"
-                    if len(skiplist) == 3:
+                    processed=f"Skip processed. {len(skiplist)}/2.\n"
+                    if len(skiplist) == 2:
                         await interaction.response.send_message(f"{processed}The answer was:\n{uppervolt(item.title())}")
                         skiplist = []
                         await sendImage(interaction, "")
