@@ -5,5 +5,11 @@
             "gtceum_platinum_group_sludge_dust.png",
             "gtceum_aqua_regia.png"
         ]
+    ],
+    "Naqline":[
+        "NaqLine",
+        [
+            "gtceum_naquadah_dust.png"
+        ]
     ]
 }
