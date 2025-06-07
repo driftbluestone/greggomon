@@ -2,7 +2,7 @@
 DIR = "C:/wtg-testing"
 TOKEN = ""
 import discord # type: ignore
-import random, asyncio, shutil, json, typing, math, time
+import random, asyncio, shutil, json, typing, math, time, hints, cleaner
 from discord.ext import commands # type: ignore 
 bot = commands.Bot(command_prefix="!", intents=discord.Intents.all())
 
@@ -52,15 +52,6 @@ async def on_ready():
 
     print(f'Time to greg, {bot.user}')
 
-def cleanInput(text):
-    for k, v in REPLACES.items():
-        text = text.replace(k, v)
-    return text
-
-def uppervolt(text):
-    for k, v in UPPER.items():
-        text = text.replace(k, v)
-    return text
 
 async def sendImage(target, msgCont):
     global image, item, itemAnswerList, totalGuesses, user_attempts, TIME, allAnswerFoundList, skiplist
@@ -82,7 +73,7 @@ async def sendImage(target, msgCont):
     print(image)
     rimage = shutil.copyfile(f"{DIR}/imagelist/{item}",f"{DIR}/item.png")
 
-    item = cleanInput(item)
+    item = cleaner.cleanInput(item)
     item = item.replace("gtceum_","").replace(".png","").replace("_"," ")
     itemAnswerList=item.split()
 
@@ -98,7 +89,7 @@ async def skip(interaction: discord.Interaction):
     global TIME, user_attempts, item, skiplist
     processed=""
     if TIME+1800 <= int(time.time()):
-        await interaction.response.send_message(f"The answer was:\n{uppervolt(item.title())}")
+        await interaction.response.send_message(f"The answer was:\n{cleaner.uppervolt(item.title())}")
         await sendImage(interaction, "")
     elif TIME+300 <= int(time.time()):
         if interaction.user.id not in skiplist:
@@ -109,7 +100,7 @@ async def skip(interaction: discord.Interaction):
                     skiplist.append(interaction.user.id)
                     processed=f"Skip processed. {len(skiplist)}/2.\n"
                     if len(skiplist) == 2:
-                        await interaction.response.send_message(f"{processed}The answer was:\n{uppervolt(item.title())}")
+                        await interaction.response.send_message(f"{processed}The answer was:\n{cleaner.uppervolt(item.title())}")
                         skiplist = []
                         await sendImage(interaction, "")
                     else:
@@ -144,10 +135,9 @@ async def quit_bot(ctx: discord.Interaction):
         await ctx.response.send_message(random.choice(QUITLIST))
 
 async def processMessage(source, content_lower, user_id):
-    global totalGuesses, answerFoundList, user_attempts, allAnswerFoundList
-    content_lower = cleanInput(content_lower)
+    global totalGuesses, answerFoundList, user_attempts, allAnswerFoundList, item
     response_method = source.followup.send
-    responseList = content_lower.split()
+    responseList = cleaner.cleanInput(content_lower).split()
     answerFoundList = []
     answerWrong = 0
     totalGuesses+=1
@@ -161,7 +151,7 @@ async def processMessage(source, content_lower, user_id):
     answerFoundList.sort()
 
     if answerFoundList == itemAnswerList and answerWrong != 1:
-        await sendImage(source, f"'{uppervolt(item.title())}' is correct!\nMoving onto the next image...")
+        await sendImage(source, f"'{cleaner.uppervolt(item.title())}' is correct!\nMoving onto the next image...")
         if user_id not in USER_SCORE:
            USER_SCORE[user_id] = 0
         USER_SCORE[user_id]+=1
@@ -181,13 +171,25 @@ async def processMessage(source, content_lower, user_id):
         for i in answerFoundList:
             allAnswerFoundList.append(i)
         if totalGuesses == 10:
-            possible_hints = [x for x in itemAnswerList if x not in allAnswerFoundList]
+            possible_hints = []
+            randomWord = True
+            # Checks to see if there is an available hint for item
+            HintFromChecker = hints.HintChecker(item)
+            if HintFromChecker[0] == "false":
+                randomWord = True
+                possible_hints = [x for x in itemAnswerList if x not in allAnswerFoundList]
+            else:
+                randomWord = False
+                possible_hints = HintFromChecker
             print(allAnswerFoundList)
             print(possible_hints)
             if not possible_hints:
                 hint = "\n10 incorrect Guesses, huh? Heres a hint.\nAll of the words in the item name have been found already."
             else:
-                hint = f"\n10 incorrect Guesses, huh? Heres a hint.\nOne of the words in the item name is: {random.choice(possible_hints)}"
+                if randomWord:            
+                    hint = f"\n10 incorrect Guesses, huh? Heres a hint.\nOne of the words in the item name is: {random.choice(possible_hints)}"
+                else:
+                    hint = f"\n10 incorrect Guesses, huh? Heres a hint.\nIt is associated with: {random.choice(possible_hints)}"
         if not answerFoundList:
             await response_method(f"Nope! {guessLeft}{hint}")
         else:
@@ -240,7 +242,7 @@ async def resetGuesses(ctx: discord.Interaction):
 async def reveal(interaction: discord.Interaction):
     if (str(interaction.user.id) in ALLOWEDUSERS) or (discord.utils.find(lambda r: str(r.id) in ALLOWEDROLES, interaction.user.roles)):
         await interaction.response.defer(ephemeral=False)
-        await interaction.followup.send(f"The answer was:\n{uppervolt(item.title())}")
+        await interaction.followup.send(f"The answer was:\n{cleaner.uppervolt(item.title())}")
         await sendImage(interaction, "")
     else:
         await interaction.response.send_message("Permission denied.", ephemeral=True)
