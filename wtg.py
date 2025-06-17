@@ -225,7 +225,7 @@ async def answer_r(interaction: discord.Interaction, user_input):
     server_id = str(interaction.guild_id)
     user_id = str(interaction.user.id)
     # Make sure they're running the command in the same channel the image is in
-    if check_channel(interaction, 0): return await interaction.response.send_message(f"Wrong channel! <#{CONFIG[server_id]["channel"][0]}>", ephemeral=True)
+    if check_channel(interaction, 0): return await interaction.response.send_message(f"Wrong channel! <#{CONFIG[server_id]["channels"][0]}>", ephemeral=True)
 
     user_input = user_input.lower()
     if not user_attempts[server_id].get(user_id, 0) < CONFIG[server_id]["Guesses Per User"]:
@@ -240,7 +240,7 @@ async def answer_r(interaction: discord.Interaction, user_input):
 async def skip(interaction: discord.Interaction):
     server_id = str(interaction.guild_id)
     user_id = str(interaction.user.id)
-    if check_channel(interaction, 0): return await interaction.response.send_message(f"Wrong channel! <#{CONFIG[server_id]["channel"][0]}>", ephemeral=True)
+    if check_channel(interaction, 0): return await interaction.response.send_message(f"Wrong channel! <#{CONFIG[server_id]["channels"][0]}>", ephemeral=True)
     if image_time[server_id]+(CONFIG[server_id]["Time to Secondary Skip"]*60) <= int(time.time()):
         await send_image(interaction, f"The answer was:\n{autocorrect.uppercase(answer_key[server_id].title())}", True, False)
         return
@@ -625,15 +625,6 @@ async def feedbackban(interaction: discord.Interaction, user: discord.User):
     with open(f"{DIR}/data/banned.json", "w") as file:
         json.dump(BANNED, file)
     await interaction.response.send_message(embed=discord.Embed(description=returnmessage))
-
-@tree.command(name="notify", description="Super admin only. Sends a message to every active channel.")
-async def notify(interaction: discord.Interaction, text: str):
-    if not((str(interaction.user.id) in SUPERADMINS)): return await interaction.response.send_message("Permission denied.",ephemeral=True)
-    print()
-    for _, v in CONFIG.items():
-        channel = bot.get_channel(v[0])
-        await channel.send(text)
-    await interaction.response.send_message("Message sent.")
 
 @tree.command(name="quit", description="Super admin only. Kills the bot.")
 async def quit_bot(interaction: discord.Interaction):
