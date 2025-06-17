@@ -227,6 +227,7 @@ async def answer_r(interaction: discord.Interaction, user_input):
     # Make sure they're running the command in the same channel the image is in
     if check_channel(interaction, 0): return await interaction.response.send_message(f"Wrong channel! <#{CONFIG[server_id]["channel"][0]}>", ephemeral=True)
 
+    user_input = user_input.lower()
     if not user_attempts[server_id].get(user_id, 0) < CONFIG[server_id]["Guesses Per User"]:
         await interaction.response.send_message("You've used all your guesses!")
         return
@@ -347,8 +348,8 @@ def build_user_stats(interaction: discord.Interaction, user: discord.User):
     if not os.path.isfile(f"{DIR}/data/scores/user/{user_id}.json"):
         return f"### {user.name}'s stats\n- Correct Guesses (Global): 0\n- Correct Guesses (Server): 0\n- Total Guesses:{spaces}0"
     descbuilder = f"### {user.name}'s stats\n"
-    descbuilder+= f"- Correct Guesses (Global): {STATISTICS["global"]["users"][username]}\n"
-    descbuilder+= f"- Correct Guesses (Server): {STATISTICS["server"][server_id]["users"][user_id]}\n"
+    descbuilder+= f"- Correct Guesses (Global): {STATISTICS["global"]["users"].get(username, 0)}\n"
+    descbuilder+= f"- Correct Guesses (Server): {STATISTICS["server"][server_id]["users"].get(user_id, 0)}\n"
     descbuilder+= f"- Total Guesses:{spaces}{STATISTICS["user"][user_id]["total_guesses"]}\n"
     return descbuilder
 
@@ -366,6 +367,7 @@ async def leaderboard(interaction: discord.Interaction, option: typing.Optional[
     if user != None and user.bot: return await interaction.response.send_message("Bots dont have stats!", ephemeral=True)
     if user == None:
         max_page = int(math.ceil((len(STATISTICS["global"]["users"])/10)))
+    if page != None:
         if page > max_page: return interaction.response.send_message(f"Invalid page! Must be between 1 and {max_page}.", ephemeral=True)
     if user == None and page == None: page = 1
     klist, vlist = [], []
