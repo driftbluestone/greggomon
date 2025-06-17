@@ -102,7 +102,7 @@ async def process_guess(interaction: discord.Interaction, content):
 
     # hint logic
     hint = ""
-    if total_guesses[server_id] >= CONFIG[server_id]["Guesses to Hint"]:
+    if total_guesses[server_id] == CONFIG[server_id]["Guesses to Hint"]:
         possible_hints = [x for x in answer_list[server_id] if x not in found_words[server_id]]
         print(found_words[server_id])
         print(possible_hints)
