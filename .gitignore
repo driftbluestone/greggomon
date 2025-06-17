@@ -1,0 +1,8 @@
+__pycache__
+imageset/*
+item*
+TOKEN.txt
+roadmap.txt
+data/config/*.json
+data/scores/server/*.json
+data/scores/user/*.json

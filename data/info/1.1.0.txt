@@ -1,0 +1,12 @@
+# 1.1.0
+- Update replaces.json to include substation hatches, 'hex':'16X' is now 'hex_':'16X '
+- upper.json how requires spaces after every voltage tier to prevent conflits
+- Fix scoreboard. No longer generates ghost entries with usernames instead of user id's when using the /score command
+- Scoreboard numbering is now correct, for example page 2 now starts at 11 instead of 10
+- Added /skip command, requires 3 people that have used all 3 guesses to skip after 10 minutes have passed since the last image
+- Add info command to access changelogs and help
+- Add info subcommands: `1.0.1`, `1.1.0`, `help`
+- Add reduceproblist.txt, so when an image with any keywords in the list are found, it re-rolls
+- quit is now a slash command
+- /image command description now specifies that it is admin-only
+- Added warnings when you have 1 and 0 guesses left",

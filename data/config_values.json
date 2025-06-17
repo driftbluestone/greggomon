@@ -1,0 +1,11 @@
+{
+    "Autocorrect Level":[0, 2],
+    "Global Scoreboard":[0, 1],
+    "Guesses Per User":[1, 4],
+    "Guesses to Hint":[5, 10000],
+    "Users to Skip":[2, 10000],
+    "Time to Skip":[5, 10000],
+    "Time to Secondary Skip":[15, 10000],
+    "Max Guess Length":[75, 150]
+}
+

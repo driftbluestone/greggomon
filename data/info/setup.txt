@@ -1,0 +1,16 @@
+# Setup
+### Every configuration command
+- **/permission**: This command requires Administrator permission to use, and allowes you to configure which roles and users can use other config commands.
+- **/channel**: Sets the primary and secondary active channels, primary for the main game, and secondary for other bot commands. They can be the same channel.
+- **/image_set**: Changes which image sets are used in the server. You must have at least one enabled.
+- **/ban_keyword**: Ban any keywords from appearing in the images. Max 10
+- **/config**: Configuration for every other setting.
+### Every config option
+- **Autocorrect Level**: 0-2, How powerful should the built in autocorrect should be. Level 0 is the minimum for the bot to function, level 1 makes some changes so users can make guesses closer to the lang file, and level 2 allows for common acronyms to be used.
+- **Global Scoreboard**: 0-1, Can this server participate in global leaderboards? If it can (1), then the /reveal command will be disabled to avoid cheeseing.
+- **Guesses Per User**: 1-4, How many guesses each user has.
+- **Guesses to Hint**: 5-10000, How many guesses before a hint is given.
+- **Users to Skip**: 2-10000, How many users need to run the /skip command to skip.
+- **Time to Skip**: 5-10000, How many minutes must pass before users can start using the /skip command.
+- **Time to Secondary Skip**: 15-10000, How many minutes must pass before a single user can skip the current image.
+- **Max Guess Length**: 75-150, How long, in characters, the longest guess a user can submit is.

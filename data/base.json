@@ -1,0 +1,15 @@
+{
+    "permissions":[[],[]],
+    "channels":[0,0],
+    "image_sets": ["vanilla"],
+    "banned_keywords":["hex_cable"],
+
+    "Autocorrect Level": 1,
+    "Global Scoreboard":1,
+    "Guesses Per User":3,
+    "Guesses to Hint":7,
+    "Users Required to Skip":3,
+    "Time to Skip":10,
+    "Time to Secondary Skip":30,
+    "Max Guess Length":75
+}

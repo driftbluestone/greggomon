@@ -1,0 +1,8 @@
+# Help
+The goal of the game is to guess the name of the current image. Here's a breakdown of some of the commands:
+- **/answer**: Used to submit your guess on what the item is.
+- **/a**: Shortcut for /answer.
+- **/image**: Re-sends the current image, in case it got buried.
+- **/stats**: Shows bot stats, including images sent, total guesses correct guesses, and more!
+- **/leaderboard**: Ranks every person who has used the bot, can show global and server scoreboards, can sort by user or by page.
+- **skip**: Skips the current image. The specifics of the command are configurable per server, view /config for more information.

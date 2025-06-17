@@ -1,0 +1,5 @@
+# 1.1.2
+- Update 1.1.0 changelog, now notes guess warnings. It also contains proper capitalization
+- Update reduceproblist to add `refined`, `crushed`, and `pure`
+- Fix skip command to not reset everytime it is used, which made the 10 minute version useless
+- Update replaces.json flowing~ -> flowing_ (oops). Also added aluminum => aluminium

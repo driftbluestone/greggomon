@@ -1,0 +1,10 @@
+{
+    "stats":{
+        "correct_guesses":0,
+        "total_guesses":0,
+        "images_sent":0
+    },
+    "users":{
+
+    }
+}

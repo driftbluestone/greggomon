@@ -1,0 +1,41 @@
+# 2.0.0
+- Rewrite and refactor bot
+
+**Command changes!**
+- /image can now be used to re-send the current image
+- /reveal can now only be used if Global Scoreboard is disabled
+- /quit now requires superadmin level permission
+- /quit now has to be run twice
+- /a, /answer, /image, and /info can now be limited to specific channels
+- /info subcommands now have better formatting, and can pull from txt files
+- /reset removed
+- /score removed
+- /userscore removed
+
+**New commands!**
+- /stats: Gets fun stats on the bot, the server, or a user
+- /leaderboard: View server leaderboards, global leaderboards, search by page or by user
+- /feedback: Used to report bugs or make bot suggetions
+- /permission: Used to modify which users or roles have access to admin commands
+- /channel: Used to modify which channels commands can be run in
+- /imageset: Used to configure which image sets can be used by the bot
+- /config: Used to configure all other settings for the bot
+- /ban_keyword: Used to ban any keywords from appearing in the images. Max 10
+- Running any of the 5 commands above with no args will output their settings, can also be limited to specific channels.
+- /notify: Requires superadmin permission. Sends a message to all active channels
+- /feedbackban: Requires superadmin permission. Bans a user from using the feedback command
+
+**Other Changes!**
+- All the following values are now configurable, see `/info setup` for more information
+- Autocorrect Level, Global Scoreboard, Guesses Per User,  Guesses to Hint, Users Required to Skip, Time to Skip, Time to Secondary Skip, Max Guess Length
+- New stats now tracked: total guesses and images sent. with values for the server, user, and globally all available through the /stats command
+- All .txt files replaces with json files
+- All .json files moved to data folder
+- New superadmins permission created, stored in data.json
+- Directory the bot functions in is now auto-detected instead of manually input into the code
+- Added `github` and `discord` subcommand
+- Code now contains more than 1 comment
+- Bot can now run in multiple servers simultaniously
+- Add GregTech and Minecraft version to version subcommand
+- Image set now contains 20532 images
+- New image sets: Classic and Vanilla (Refreshed was the old one)
