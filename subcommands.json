@@ -1,0 +1,18 @@
+{
+    "help":"help.txt",
+    "setup":"setup.txt",
+    "version":"# Version\nBot version: 2.0.4\nGregtech images from GTM 1.6.4\nMinecraft images from 1.21.4",
+    "credits":"credits.txt",
+    "github":"# Github\nhttps://github.com/driftbluestone/greggomon",
+    "discord":"# Discord\nhttps://discord.gg/hs6kKNbkCm",
+    "1.0.1":"# 1.0.1\n- Added max answer length",
+    "1.1.0":"1.1.0.txt",
+    "1.1.1":"# 1.1.1\n- Add version subcommand\n- Fix error message when invalid subcommand is used",
+    "1.1.2":"1.1.2.txt",
+    "1.1.3":"# 1.1.3\n- Reduce time to /skip to 5 minutes\n- Fix bug where /skip amount would not reset with new images\n- Reduced people required to skip from 3 -> 2",
+    "2.0.0":"2.0.0.txt",
+    "2.0.1":"2.0.1.txt",
+    "2.0.2":"2.0.2.txt",
+    "2.0.3":"# 2.0.3\n- Fixed hints showing up for every guess past Guesses to Hint",
+    "2.0.4":"# 2.0.4\n- Fix hint problems - ggolf\n- Fix wirecutterss"
+}
