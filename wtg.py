@@ -99,6 +99,7 @@ async def process_guess(interaction: discord.Interaction, content):
             answer_wrong = True
     words_found.sort()
     answer_list[server_id].sort()
+    found_words[server_id].extend(words_found)
 
     # hint logic
     hint = ""
@@ -126,7 +127,6 @@ async def process_guess(interaction: discord.Interaction, content):
     elif len(words_found) == 0:
         await interaction.response.send_message(f"Nope! {guess_warning}{hint}")
     else:
-        found_words[server_id].extend(words_found)
         await interaction.response.send_message(f"Not quite! {guess_warning}Correct words: {words_found}\n{hint}")
     score_increment(interaction, ["incorrect_guess"])
 
