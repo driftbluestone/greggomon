@@ -1,6 +1,6 @@
-# Mostly written by @wabwit on discord. Thanks!
+# Written with help from @wabwit on discord. Thanks!
 import json, pathlib
-DIR = pathlib.Path(__file__).parent.absolute()
+DIR = f"{pathlib.Path(__file__).parent.absolute()}"
 REPLACES=[0]*3
 UPPER = {}
 def load_data():

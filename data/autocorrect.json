@@ -2,10 +2,6 @@
     "level_0":
     {
         "_":" ",
-        "gtceum ":"",
-        "gtceu ":"",
-        "minecraft ":"",
-        ".png":"",
         "flowing ":""
     },
     "level_1":{
@@ -35,9 +31,9 @@
         "micro processor":"microprocessor",
         "ultimate battery":"max battery",
         "sheldonite":"cooperite",
+        "wirecutter":"wirecutters",
         "wire cutter":"wirecutters",
         "wire cutters":"wirecutters",
-        "wirecutter":"wirecutters",
         "energy input hatch":"energy hatch"
     },
     "level_2":{

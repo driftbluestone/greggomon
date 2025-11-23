@@ -1,3 +1,0 @@
-# 2.0.2
-- Fixed wrong channel warning
-- Removed /notfify command (it doesnt work and i dont want to fix it)

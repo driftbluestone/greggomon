@@ -1,8 +1,7 @@
 __pycache__
-imageset/*
+imageset
+old
+todo.txt
 item*
 TOKEN.txt
 roadmap.txt
-data/config/*.json
-data/scores/server/*.json
-data/scores/user/*.json
