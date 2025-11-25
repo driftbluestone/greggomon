@@ -1,10 +1,5 @@
 {
-    "level_0":
-    {
-        "_":" ",
-        "flowing ":""
-    },
-    "level_1":{
+    "autocorrect":{
         "-":" ",
         "tungsten steel":"tungstensteel",
         "energy output":"dynamo",
@@ -14,11 +9,12 @@
         "hss e":"hsse",
         "block of":"block",
         "end stone":"endstone",
-        "single":"1x",
-        "double":"2x",
-        "quadruple":"4x",
-        "octal":"8x",
-        "hex ":"16x ",
+        "1x":"single",
+        "2x":"double",
+        "4x":"quadrouple",
+        "8x":"octal",
+        "9x":"nonouple",
+        "16x ":"hex ",
         "purified":"pure",
         "substation dynamo":"substation output",
         "substation energy":"substation input",
@@ -26,8 +22,8 @@
         "aluminum":"aluminium",
         "low pressure":"lp",
         "high pressure":"hp",
-        "mega blast":"rotary hearth",
-        "mega vacuum freezer":"bulk blast chiller",
+        "rotary hearth":"mega blast",
+        "bulk blast chiller":"mega vacuum freezer",
         "micro processor":"microprocessor",
         "ultimate battery":"max battery",
         "sheldonite":"cooperite",
@@ -35,24 +31,6 @@
         "wire cutter":"wirecutters",
         "wire cutters":"wirecutters",
         "energy input hatch":"energy hatch"
-    },
-    "level_2":{
-        "naq":"naquadah",
-        "naqalloy":"naquadah alloy",
-        " pe ":"polyethylene",
-        "pcv":"polyvinyl chloride",
-        "pcl":"polycaprolactam",
-        "ptfe":"polytetrafluoroethylene",
-        "pbi":"polybenzimidazole",
-        "ebf":"electric blast furnace",
-        "lcr":"large chemical reactor",
-        "abs":"alloy blast smelter",
-        "rhf":"mega blast furnace",
-        "pbf":"primitive blast furnace",
-        "bbf":"primitive blast furnace",
-        "sgm":"sterilized grown medium",
-        "rgm":"raw growth medium",
-        "bbc":"mega vacuum freezer"
     },
     "uppercase":{
         "Lp ":"LP ",

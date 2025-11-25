@@ -7,15 +7,14 @@ def load_data():
     global REPLACES, UPPER
     with open(f"{DIR}/data/autocorrect.json", "r") as file:
         AUTOCORRECT = json.load(file)
-        for i in range(3):
-            REPLACES[i] = AUTOCORRECT[f"level_{i}"]
+        REPLACES = AUTOCORRECT["autocorrect"]
         UPPER = AUTOCORRECT["uppercase"]
 load_data()
 
-def correct_input(text, level):
-    for i in range(level+1):
-        for k, v in REPLACES[i].items():
-            text = text.replace(k, v)
+def correct_input(text):
+    text = text.lower()
+    for k, v in REPLACES.items():
+        text = text.replace(k, v)
     return text
 
 def uppercase(text):
