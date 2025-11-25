@@ -42,17 +42,20 @@ for img_path in os.listdir(f"{DIR}/data/servers"):
 
 @bot.event
 async def on_ready():
+    # fix old answer buttons
+    for server in servers.values():
+        if not server.embed == 0:
+            channel = bot.get_channel(server.channel)
+            message = await channel.fetch_message(server.embed)
+            await message.edit(view=answer_button())
     try:
         synced = await tree.sync()
         print(f"Synced {len(synced)} commands.")
     except Exception as exception:
         print(f"Error syncing commands: {exception}")
     print(f'Gregging it up as {bot.user}!')
-    for server in servers.values():
-        if not server.embed == 0:
-            channel = bot.get_channel(server.channel)
-            message = await channel.fetch_message(server.embed)
-            await message.edit(view=answer_button())
+    
+    
 
 async def get_server_object(server_id):
     servers[server_id] = servers.get(server_id, Server(**default_server_config))
@@ -99,7 +102,10 @@ async def send_image(interaction: discord.Interaction, content: str, new: bool):
     print(server.answer)
     embed=discord.Embed()
     embed.set_image(url=server.image_link)
-    if not server.embed == 0: await (await interaction.channel.fetch_message(server.embed)).edit(view=None)
+    if not server.embed == 0:
+        channel = bot.get_channel(server.channel)
+        message = await channel.fetch_message(server.embed)
+        await message.edit(view=None)
     msg = await interaction.response.send_message(content,embed=embed,view=answer_button())
     server.embed = msg.message_id
     server.channel = interaction.channel.id
