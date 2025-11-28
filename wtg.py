@@ -1,15 +1,18 @@
-import discord, pathlib, os, shutil, json, time, random, autocorrect, pickle
+import discord, pathlib, os, shutil, json, time, random, pickle
 from dataclasses import asdict, dataclass
+from modules import autocorrect, hints, config, get_dialogue
 bot = discord.Client(intents=discord.Intents.all())
 tree = discord.app_commands.CommandTree(bot)
 DIR = pathlib.Path(__file__).parent.absolute()
 with open(f"{DIR}/TOKEN.txt", "r") as file:
     TOKEN = file.read()
+
 with open(f"{DIR}/gtceum.json", "r") as file:
     gtceum = json.load(file)
 
 # configs to eventually outsource to json
 max_guess_length = 75
+guesses_to_hint = 3
 
 with open(f"{DIR}/data/default_server_config.json", "r") as file:
     default_server_config = json.load(file)
@@ -17,14 +20,16 @@ with open(f"{DIR}/data/default_server_config.json", "r") as file:
 # data storage objects
 @dataclass
 class Server:
-    id:str
-    config:dict
-    image_link:str
-    answer:str
-    answer_list:list
-    embed:int
+    id: str
+    config: dict
+    image_link: str
+    answer: str
+    answer_list: list
+    embed: int
     channel: int
-    stats:dict
+    stats: dict
+    guess_counter: int
+    words_found: list
 
 @dataclass
 class user:
@@ -54,15 +59,13 @@ async def on_ready():
     except Exception as exception:
         print(f"Error syncing commands: {exception}")
     print(f'Gregging it up as {bot.user}!')
-    
-    
 
 async def get_server_object(server_id):
     servers[server_id] = servers.get(server_id, Server(**default_server_config))
     servers[server_id].id = server_id
     return servers[server_id]
 
-async def save_server_state(server_id):
+async def save_server_state(server_id: str):
     with open(f"{DIR}/data/servers/{server_id}.json", "w") as file:
         json.dump(asdict(servers[server_id]), file)
 
@@ -117,6 +120,7 @@ async def image(interaction:discord.Interaction, guess: str):
 
 async def answer_logic(interaction: discord.Interaction, guess: str):
     server_id = str(interaction.guild.id)
+    server: Server
     server = await get_server_object(server_id)
     guess_list = autocorrect.correct_input(guess).split()
     words_found = []
@@ -128,12 +132,32 @@ async def answer_logic(interaction: discord.Interaction, guess: str):
             answer_wrong = True
     words_found.sort()
     server.answer_list.sort()
+
+    # hint logic. Eventually move to seperate python file!
+    server.guess_counter+=1
+    server.words_found.extend(words_found)
+    hint = hints.get_hint()
+    if server.guess_counter == guesses_to_hint:
+        possible_hints = [x for x in server.answer_list if x not in server.words_found]
+        if not possible_hints:
+            hint = f"{guesses_to_hint} incorrect Guesses, huh? Heres a hint.\nAll of the words in the item name have been found already."
+        else:
+            hint = f"{guesses_to_hint} incorrect Guesses, huh? Heres a hint.\nOne of the words in the item name is: '{random.choice(possible_hints)}'"
     if (words_found == server.answer_list) and (answer_wrong == False):
+        server.guess_counter = 0
+        server.words_found = []
         await send_image(interaction, f"'{autocorrect.uppercase(server.answer)}' is correct!\nMoving on the the next image...", True)
         return
     elif len(words_found) == 0:
-        await interaction.response.send_message(f"Nope!")
+        await interaction.response.send_message(f"Nope!\n{hint}")
     else:
-        await interaction.response.send_message(f"Not quite! Correct words: {words_found}")
+        await interaction.response.send_message(f"Not quite! Correct words: {words_found}\n{hint}")
+    await save_server_state(server_id)
 
+@tree.command(name="reveal",description="reveals the answer")
+async def reveal(interaction: discord.Interaction):
+    server_id = str(interaction.guild.id)
+    server: Server
+    server = await get_server_object(server_id)
+    await send_image(interaction, f"'{autocorrect.uppercase(server.answer)}' is correct!\nMoving on the the next image...", True)
 bot.run(TOKEN)

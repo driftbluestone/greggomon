@@ -6,5 +6,7 @@
     "answer_list":[],
     "embed":0,
     "channel":0,
-    "stats":{}
+    "stats":{},
+    "guess_counter":0,
+    "words_found":[]
 }
