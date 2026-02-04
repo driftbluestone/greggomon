@@ -5,7 +5,7 @@ REPLACES=[0]*3
 UPPER = {}
 def load_data():
     global REPLACES, UPPER
-    with open(f"{DIR}/data/autocorrect.json", "r") as file:
+    with open(f"{DIR}/../data/autocorrect.json", "r") as file:
         AUTOCORRECT = json.load(file)
         REPLACES = AUTOCORRECT["autocorrect"]
         UPPER = AUTOCORRECT["uppercase"]

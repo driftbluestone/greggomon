@@ -1,6 +1,6 @@
-import discord, pathlib, os, shutil, json, time, random, pickle
+import discord, pathlib, os, shutil, json, time, random
 from dataclasses import asdict, dataclass
-from modules import autocorrect, hints, config, get_dialogue
+from modules import autocorrect, hints, config
 bot = discord.Client(intents=discord.Intents.all())
 tree = discord.app_commands.CommandTree(bot)
 DIR = pathlib.Path(__file__).parent.absolute()
@@ -11,8 +11,7 @@ with open(f"{DIR}/gtceum.json", "r") as file:
     gtceum = json.load(file)
 
 # configs to eventually outsource to json
-max_guess_length = 75
-guesses_to_hint = 3
+
 
 with open(f"{DIR}/data/default_server_config.json", "r") as file:
     default_server_config = json.load(file)
@@ -30,10 +29,12 @@ class Server:
     stats: dict
     guess_counter: int
     words_found: list
+    guesses: dict
 
 @dataclass
 class user:
-    pass
+    id: str
+    stats: dict
 
 @dataclass
 class image_set:
@@ -49,10 +50,12 @@ for img_path in os.listdir(f"{DIR}/data/servers"):
 async def on_ready():
     # fix old answer buttons
     for server in servers.values():
+        config.server_updater(server)
         if not server.embed == 0:
             channel = bot.get_channel(server.channel)
             message = await channel.fetch_message(server.embed)
-            await message.edit(view=answer_button())
+            await message.edit(view=answer_button(server))
+        await save_server_state(server.id)    
     try:
         synced = await tree.sync()
         print(f"Synced {len(synced)} commands.")
@@ -71,23 +74,30 @@ async def save_server_state(server_id: str):
 
 # discord interaction buttons
 class answer_button(discord.ui.View):
-    def __init__(self):
+    def __init__(self, server):
         super().__init__(timeout=1000000000)
+        self.server: Server
+        self.server = server
     @discord.ui.button(label="Submit a Guess!", style=discord.ButtonStyle.primary, custom_id="open_modal_button")
     async def open_modal_button_callback(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.send_modal(answer_input())
+        await interaction.response.send_modal(answer_input(self.server))
 
 class answer_input(discord.ui.Modal, title="Submit a Guess"):
-    my_input = discord.ui.TextInput(
-        label="Enter your guess:",
-        placeholder="",
-        style=discord.TextStyle.short, # discord.TextStyle.paragraph for multi line
-        required=True,
-        max_length=max_guess_length
-    )
-
+    def __init__(self, server):
+        super().__init__()
+        self.server: Server
+        self.server = server
+        self.user_input = discord.ui.TextInput(
+            label="Enter your guess:",
+            placeholder="",
+            style=discord.TextStyle.short, # discord.TextStyle.paragraph for multi line
+            required=True,
+            max_length=self.server.config["max_guess_length"]
+        )
+        self.add_item(self.user_input)
+    
     async def on_submit(self, interaction: discord.Interaction):
-        user_input = self.my_input.value
+        user_input = self.user_input.value
         await answer_logic(interaction, user_input)
 
 @tree.command(name="image",description="Resends the previous image")
@@ -109,7 +119,7 @@ async def send_image(interaction: discord.Interaction, content: str, new: bool):
         channel = bot.get_channel(server.channel)
         message = await channel.fetch_message(server.embed)
         await message.edit(view=None)
-    msg = await interaction.response.send_message(content,embed=embed,view=answer_button())
+    msg = await interaction.response.send_message(content,embed=embed,view=answer_button(server))
     server.embed = msg.message_id
     server.channel = interaction.channel.id
     await save_server_state(server_id)
@@ -120,6 +130,7 @@ async def image(interaction:discord.Interaction, guess: str):
 
 async def answer_logic(interaction: discord.Interaction, guess: str):
     server_id = str(interaction.guild.id)
+    user_id = str(interaction.user.id)
     server: Server
     server = await get_server_object(server_id)
     guess_list = autocorrect.correct_input(guess).split()
@@ -133,31 +144,40 @@ async def answer_logic(interaction: discord.Interaction, guess: str):
     words_found.sort()
     server.answer_list.sort()
 
+    server.guesses[user_id] = server.guesses.get(user_id, 0)
+    if server.guesses[user_id] == server.config["user_guess_limit"]:
+        return await interaction.response.send_message("You're out of guesses!")
     # hint logic. Eventually move to seperate python file!
     server.guess_counter+=1
     server.words_found.extend(words_found)
-    hint = hints.get_hint()
-    if server.guess_counter == guesses_to_hint:
+    hint = hints.get_hint(server)
+    if server.guess_counter == server.config["guesses_to_hint"]:
         possible_hints = [x for x in server.answer_list if x not in server.words_found]
         if not possible_hints:
-            hint = f"{guesses_to_hint} incorrect Guesses, huh? Heres a hint.\nAll of the words in the item name have been found already."
+            hint = f"{server.config["guesses_to_hint"]} incorrect Guesses, huh? Heres a hint.\nAll of the words in the item name have been found already."
         else:
-            hint = f"{guesses_to_hint} incorrect Guesses, huh? Heres a hint.\nOne of the words in the item name is: '{random.choice(possible_hints)}'"
+            hint = f"{server.config["guesses_to_hint"]} incorrect Guesses, huh? Heres a hint.\nOne of the words in the item name is: '{random.choice(possible_hints)}'"
     if (words_found == server.answer_list) and (answer_wrong == False):
         server.guess_counter = 0
         server.words_found = []
+        server.guesses = {}
         await send_image(interaction, f"'{autocorrect.uppercase(server.answer)}' is correct!\nMoving on the the next image...", True)
         return
     elif len(words_found) == 0:
         await interaction.response.send_message(f"Nope!\n{hint}")
     else:
         await interaction.response.send_message(f"Not quite! Correct words: {words_found}\n{hint}")
+    server.guesses[user_id] += 1
     await save_server_state(server_id)
 
-@tree.command(name="reveal",description="reveals the answer")
+@tree.command(name="reveal",description="INCOMPLETE!! reveals the answer")
 async def reveal(interaction: discord.Interaction):
     server_id = str(interaction.guild.id)
     server: Server
     server = await get_server_object(server_id)
     await send_image(interaction, f"'{autocorrect.uppercase(server.answer)}' is correct!\nMoving on the the next image...", True)
+
+@tree.command(name="config",description="Configures the bot")
+async def cfg(interaction: discord.Interaction):
+    pass
 bot.run(TOKEN)
