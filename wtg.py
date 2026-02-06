@@ -1,20 +1,20 @@
 import discord, pathlib, os, shutil, json, time, random
 from dataclasses import asdict, dataclass
-from modules import autocorrect, hints, config
+from modules import autocorrect, hints, updater, stats
 bot = discord.Client(intents=discord.Intents.all())
 tree = discord.app_commands.CommandTree(bot)
 DIR = pathlib.Path(__file__).parent.absolute()
 with open(f"{DIR}/TOKEN.txt", "r") as file:
     TOKEN = file.read()
 
+#image sets aaahhhh
 with open(f"{DIR}/gtceum.json", "r") as file:
     gtceum = json.load(file)
 
-# configs to eventually outsource to json
-
-
 with open(f"{DIR}/data/default_server_config.json", "r") as file:
     default_server_config = json.load(file)
+with open(f"{DIR}/data/default_user_config.json", "r") as file:
+    default_user_config = json.load(file)
 
 # data storage objects
 @dataclass
@@ -27,13 +27,15 @@ class Server:
     embed: int
     channel: int
     stats: dict
+    leaderboard: dict
     guess_counter: int
     words_found: list
     guesses: dict
 
 @dataclass
-class user:
+class User:
     id: str
+    username: str
     stats: dict
 
 @dataclass
@@ -42,15 +44,19 @@ class image_set:
 
 # data loading
 servers = {}
+users = {}
 for img_path in os.listdir(f"{DIR}/data/servers"):
     with open(f"{DIR}/data/servers/{img_path}", "r") as file:
         servers[img_path[:-5]] = Server(**json.load(file))
+for img_path in os.listdir(f"{DIR}/data/users"):
+    with open(f"{DIR}/data/users/{img_path}", "r") as file:
+        users[img_path[:-5]] = User(**json.load(file))
 
 @bot.event
 async def on_ready():
     # fix old answer buttons
     for server in servers.values():
-        config.server_updater(server)
+        updater.server_updater(server)
         if not server.embed == 0:
             channel = bot.get_channel(server.channel)
             message = await channel.fetch_message(server.embed)
@@ -65,12 +71,25 @@ async def on_ready():
 
 async def get_server_object(server_id):
     servers[server_id] = servers.get(server_id, Server(**default_server_config))
+    if servers[server_id].id != "": return servers[server_id]
     servers[server_id].id = server_id
     return servers[server_id]
+
+async def get_user_object(interaction: discord.Interaction):
+    user_id = str(interaction.user.id)
+    users[user_id] = users.get(user_id, User(**default_user_config))
+    if users[user_id].id != "": return users[user_id]
+    users[user_id].id = user_id
+    users[user_id].username = interaction.user.name
+    return users[user_id]
 
 async def save_server_state(server_id: str):
     with open(f"{DIR}/data/servers/{server_id}.json", "w") as file:
         json.dump(asdict(servers[server_id]), file)
+
+async def save_user_state(user_id: str):
+    with open(f"{DIR}/data/users/{user_id}.json", "w") as file:
+        json.dump(asdict(users[user_id]), file)
 
 # discord interaction buttons
 class answer_button(discord.ui.View):
@@ -106,6 +125,7 @@ async def image(interaction:discord.Interaction):
 
 async def send_image(interaction: discord.Interaction, content: str, new: bool):
     server_id = str(interaction.guild.id)
+    server: Server
     server = await get_server_object(server_id)
     if server.answer == "": new = True
     if new:
@@ -122,6 +142,7 @@ async def send_image(interaction: discord.Interaction, content: str, new: bool):
     msg = await interaction.response.send_message(content,embed=embed,view=answer_button(server))
     server.embed = msg.message_id
     server.channel = interaction.channel.id
+    if new: stats.increment_server_stats(server, 0 , ["image_sent"])
     await save_server_state(server_id)
 
 @tree.command(name="answer",description="Submit a guess on the current image")
@@ -133,6 +154,12 @@ async def answer_logic(interaction: discord.Interaction, guess: str):
     user_id = str(interaction.user.id)
     server: Server
     server = await get_server_object(server_id)
+    user = await get_user_object(interaction)
+
+    # stat tracking variables
+    increment_server = []
+    increment_user = []
+
     guess_list = autocorrect.correct_input(guess).split()
     words_found = []
     answer_wrong = False
@@ -150,25 +177,38 @@ async def answer_logic(interaction: discord.Interaction, guess: str):
     # hint logic. Eventually move to seperate python file!
     server.guess_counter+=1
     server.words_found.extend(words_found)
+
     hint = hints.get_hint(server)
     if server.guess_counter == server.config["guesses_to_hint"]:
+        increment_server.append("hint_sent")
         possible_hints = [x for x in server.answer_list if x not in server.words_found]
         if not possible_hints:
             hint = f"{server.config["guesses_to_hint"]} incorrect Guesses, huh? Heres a hint.\nAll of the words in the item name have been found already."
         else:
             hint = f"{server.config["guesses_to_hint"]} incorrect Guesses, huh? Heres a hint.\nOne of the words in the item name is: '{random.choice(possible_hints)}'"
     if (words_found == server.answer_list) and (answer_wrong == False):
+        increment_server.append("correct_guess")
+        increment_user.append("correct_guess")
         server.guess_counter = 0
         server.words_found = []
         server.guesses = {}
+        stats.increment_server_stats(server, user, increment_server)
+        stats.increment_user_stats(user, increment_server)
         await send_image(interaction, f"'{autocorrect.uppercase(server.answer)}' is correct!\nMoving on the the next image...", True)
         return
-    elif len(words_found) == 0:
-        await interaction.response.send_message(f"Nope!\n{hint}")
+    elif len(words_found) != 0 and server.config["show_correct_words_on_partial_correct"]:
+        increment_server.append("incorrect_guess")
+        increment_user.append("incorrect_guess")
+        await interaction.response.send_message(f"Not quite! Correct words: {words_found}\n{hint}", ephemeral=server.config["hide_user_guesses"])
     else:
-        await interaction.response.send_message(f"Not quite! Correct words: {words_found}\n{hint}")
+        increment_server.append("incorrect_guess")
+        increment_user.append("incorrect_guess")
+        await interaction.response.send_message(f"Nope!\n{hint}", ephemeral=server.config["hide_user_guesses"])
     server.guesses[user_id] += 1
+    stats.increment_server_stats(server, user, increment_server)
+    stats.increment_user_stats(user, increment_server)
     await save_server_state(server_id)
+    await save_user_state(user_id)
 
 @tree.command(name="reveal",description="INCOMPLETE!! reveals the answer")
 async def reveal(interaction: discord.Interaction):

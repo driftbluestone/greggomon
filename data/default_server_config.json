@@ -8,14 +8,24 @@
         "time_to_primary_skip":10,
         "time_to_secondary_skip":30,
         "require_used_all_guesses_to_skip":1,
-        "guesses_to_hint":5
+        "guesses_to_hint":5,
+        "image_sets":["vanilla"],
+        "hide_user_guesses":false,
+        "show_correct_words_on_partial_correct":true
     },
     "answer":"",
     "image_link":"",
     "answer_list":[],
     "embed":0,
     "channel":0,
-    "stats":{},
+    "stats":{
+        "correct_guess":0,
+        "incorrect_guess":0,
+        "image_sent":0,
+        "image_skipped":0,
+        "hint_sent":0
+    },
+    "leaderboard":{},
     "guess_counter":0,
     "words_found":[],
     "guesses":{}
