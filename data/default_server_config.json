@@ -11,7 +11,8 @@
         "guesses_to_hint":5,
         "image_sets":["vanilla"],
         "hide_user_guesses":false,
-        "show_correct_words_on_partial_correct":true
+        "show_correct_words_on_partial_correct":true,
+        "at_user_in_server_leaderboard":true
     },
     "answer":"",
     "image_link":"",

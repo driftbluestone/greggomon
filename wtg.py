@@ -1,4 +1,4 @@
-import discord, pathlib, os, shutil, json, time, random
+import discord, pathlib, os, shutil, json, time, random, typing, math
 from dataclasses import asdict, dataclass
 from modules import autocorrect, hints, updater, stats
 bot = discord.Client(intents=discord.Intents.all())
@@ -216,6 +216,14 @@ async def reveal(interaction: discord.Interaction):
     server: Server
     server = await get_server_object(server_id)
     await send_image(interaction, f"'{autocorrect.uppercase(server.answer)}' is correct!\nMoving on the the next image...", True)
+
+@tree.command(name="leaderboard",description="shows leaderboard")
+async def leaderboard(interaction:discord.Interaction, page: typing.Optional[int], user: typing.Optional[discord.User], server_leaderboard: typing.Optional[bool] = True):
+    server: Server
+    server = await get_server_object(str(interaction.guild_id))
+    
+    embed = stats.generate_leaderboard(page, server_leaderboard, user, users, server)
+    await interaction.response.send_message(embed=embed)
 
 @tree.command(name="config",description="Configures the bot")
 async def cfg(interaction: discord.Interaction):
