@@ -1,7 +1,1 @@
-{
-    "correct_guesses":0,
-    "incorrect_guesses":0,
-    "images_sent":0,
-    "images_skipped":0,
-    "hint_sent":0
-}
+{"correct_guess": 7, "incorrect_guess": 1, "image_sent": 7, "image_skipped": 0, "hint_sent": 0}

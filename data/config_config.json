@@ -1,0 +1,15 @@
+{
+    "max_guess_length":["Max Guess Length",[75, 150]],
+    "universal_guess_limit":["Universal Guess Limit","bool"],
+    "user_guess_limit":["User Guess Limit","varies"],
+    "enable_skip":["Enable Skips","bool"],
+    "time_to_primary_skip":["Time to Primary Skip",[5, "varies"]],
+    "time_to_secondary_skip":["Time to Secondary Skip",[10, "varies"]],
+    "require_used_all_guesses_to_skip":["Require Used All Guesses to Skip","bool"],
+    "guesses_to_hint":["Guesses to Hint","varies"],
+    "image_sets":["Image Sets","list"],
+    "hide_user_guesses":["Hide User Guesses","bool"],
+    "show_correct_words_on_partial_correct":["Show Correct Words if Partically correct","bool"],
+    "at_user_in_server_leaderboard":["@ Users in Server Leaderboards and Statistics","bool"],
+    "global_scoreboard":["Global Scoreboard","bool"]
+}

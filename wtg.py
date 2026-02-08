@@ -1,6 +1,9 @@
 import discord, pathlib, os, shutil, json, time, random, typing, math
 from dataclasses import asdict, dataclass
-from modules import autocorrect, hints, updater, stats
+from modules import autocorrect, hints, updater, stats, config
+from modules.classes import *
+
+
 bot = discord.Client(intents=discord.Intents.all())
 tree = discord.app_commands.CommandTree(bot)
 DIR = pathlib.Path(__file__).parent.absolute()
@@ -16,32 +19,6 @@ with open(f"{DIR}/data/default_server_config.json", "r") as file:
 with open(f"{DIR}/data/default_user_config.json", "r") as file:
     default_user_config = json.load(file)
 
-# data storage objects
-@dataclass
-class Server:
-    id: str
-    config: dict
-    image_link: str
-    answer: str
-    answer_list: list
-    embed: int
-    channel: int
-    stats: dict
-    leaderboard: dict
-    guess_counter: int
-    words_found: list
-    guesses: dict
-
-@dataclass
-class User:
-    id: str
-    username: str
-    stats: dict
-
-@dataclass
-class image_set:
-    pass
-
 # data loading
 servers = {}
 users = {}
@@ -51,6 +28,12 @@ for img_path in os.listdir(f"{DIR}/data/servers"):
 for img_path in os.listdir(f"{DIR}/data/users"):
     with open(f"{DIR}/data/users/{img_path}", "r") as file:
         users[img_path[:-5]] = User(**json.load(file))
+global_stats = {}
+global_leaderboard = {}
+with open(f"{DIR}/data/global/leaderboard.json", "r") as file:
+    global_leaderboard = json.load(file)
+with open(f"{DIR}/data/global/stats.json", "r") as file:
+    global_stats = json.load(file)
 
 @bot.event
 async def on_ready():
@@ -75,17 +58,20 @@ async def get_server_object(server_id):
     servers[server_id].id = server_id
     return servers[server_id]
 
-async def get_user_object(interaction: discord.Interaction):
-    user_id = str(interaction.user.id)
+async def get_user_object(user_id, user_name):
     users[user_id] = users.get(user_id, User(**default_user_config))
     if users[user_id].id != "": return users[user_id]
     users[user_id].id = user_id
-    users[user_id].username = interaction.user.name
+    users[user_id].username = user_name
     return users[user_id]
 
 async def save_server_state(server_id: str):
     with open(f"{DIR}/data/servers/{server_id}.json", "w") as file:
         json.dump(asdict(servers[server_id]), file)
+    with open(f"{DIR}/data/global/leaderboard.json", "w") as file:
+        json.dump(global_leaderboard, file)
+    with open(f"{DIR}/data/global/stats.json", "w") as file:
+        json.dump(global_stats, file)
 
 async def save_user_state(user_id: str):
     with open(f"{DIR}/data/users/{user_id}.json", "w") as file:
@@ -142,7 +128,7 @@ async def send_image(interaction: discord.Interaction, content: str, new: bool):
     msg = await interaction.response.send_message(content,embed=embed,view=answer_button(server))
     server.embed = msg.message_id
     server.channel = interaction.channel.id
-    if new: stats.increment_server_stats(server, 0 , ["image_sent"])
+    if new: stats.increment_server_stats(server, 0 , ["image_sent"], global_stats)
     await save_server_state(server_id)
 
 @tree.command(name="answer",description="Submit a guess on the current image")
@@ -154,7 +140,7 @@ async def answer_logic(interaction: discord.Interaction, guess: str):
     user_id = str(interaction.user.id)
     server: Server
     server = await get_server_object(server_id)
-    user = await get_user_object(interaction)
+    user = await get_user_object(str(interaction.user.id), interaction.user.name)
 
     # stat tracking variables
     increment_server = []
@@ -192,8 +178,8 @@ async def answer_logic(interaction: discord.Interaction, guess: str):
         server.guess_counter = 0
         server.words_found = []
         server.guesses = {}
-        stats.increment_server_stats(server, user, increment_server)
-        stats.increment_user_stats(user, increment_server)
+        stats.increment_server_stats(server, user, increment_server, global_stats)
+        stats.increment_user_stats(server, user, increment_server, global_leaderboard)
         await send_image(interaction, f"'{autocorrect.uppercase(server.answer)}' is correct!\nMoving on the the next image...", True)
         return
     elif len(words_found) != 0 and server.config["show_correct_words_on_partial_correct"]:
@@ -205,8 +191,8 @@ async def answer_logic(interaction: discord.Interaction, guess: str):
         increment_user.append("incorrect_guess")
         await interaction.response.send_message(f"Nope!\n{hint}", ephemeral=server.config["hide_user_guesses"])
     server.guesses[user_id] += 1
-    stats.increment_server_stats(server, user, increment_server)
-    stats.increment_user_stats(user, increment_server)
+    stats.increment_server_stats(server, user, increment_server, global_stats)
+    stats.increment_user_stats(server, user, increment_server, global_leaderboard)
     await save_server_state(server_id)
     await save_user_state(user_id)
 
@@ -222,10 +208,24 @@ async def leaderboard(interaction:discord.Interaction, page: typing.Optional[int
     server: Server
     server = await get_server_object(str(interaction.guild_id))
     
-    embed = stats.generate_leaderboard(page, server_leaderboard, user, users, server)
+    embed = stats.generate_leaderboard(page, server_leaderboard, user, users, server, global_leaderboard)
+    await interaction.response.send_message(embed=embed)
+
+@tree.command(name="statistics",description="Shows various statistics.")
+async def statistics(interaction:discord.Interaction, user: typing.Optional[discord.User]):
+    server: Server
+    server = await get_server_object(str(interaction.guild_id))
+    if user == None:
+        user = interaction.user
+    
+    description = stats.generate_statspage(user, users, server, global_stats, global_leaderboard)
+    description+= f"-# Ping: {round(bot.latency * 1000)} ms"
+    embed = discord.Embed(description = description)
     await interaction.response.send_message(embed=embed)
 
 @tree.command(name="config",description="Configures the bot")
 async def cfg(interaction: discord.Interaction):
-    pass
+    server_id = str(interaction.guild.id)
+    server = await get_server_object(server_id)
+    return config.Config_Button(server, ["test"])
 bot.run(TOKEN)

@@ -12,7 +12,8 @@
         "image_sets":["vanilla"],
         "hide_user_guesses":false,
         "show_correct_words_on_partial_correct":true,
-        "at_user_in_server_leaderboard":true
+        "at_user_in_server_leaderboard":true,
+        "global_scoreboard":true
     },
     "answer":"",
     "image_link":"",

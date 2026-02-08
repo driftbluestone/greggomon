@@ -1,25 +1,8 @@
 import json, pathlib
+from classes import *
 from dataclasses import asdict, dataclass
 DIR = pathlib.Path(__file__).parent.absolute()
 
-@dataclass
-class Server:
-    id: str
-    config: dict
-    image_link: str
-    answer: str
-    answer_list: list
-    embed: int
-    channel: int
-    stats: dict
-    guess_counter: int
-    words_found: list
-
-@dataclass
-class User:
-    id: str
-    username: str
-    stats: dict
 
 with open(f"{DIR}/../data/default_server_config.json") as file:
     default_server_config = json.load(file)
