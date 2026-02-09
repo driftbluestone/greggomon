@@ -1,8 +1,7 @@
 import json, pathlib
-from classes import *
+from modules.classes import *
 from dataclasses import asdict, dataclass
 DIR = pathlib.Path(__file__).parent.absolute()
-
 
 with open(f"{DIR}/../data/default_server_config.json") as file:
     default_server_config = json.load(file)

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 import discord, math
-from classes import *
+from modules.classes import *
 
 def increment_server_stats(server: Server, user: User, to_increment: list, stats):
     for i in to_increment:
@@ -72,4 +72,3 @@ def generate_statspage(user_object, users, server, global_stats, global_leaderbo
     else:
         description+="No data for user.\n"
     return description
-    

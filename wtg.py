@@ -2,7 +2,7 @@ import discord, pathlib, os, shutil, json, time, random, typing, math
 from dataclasses import asdict, dataclass
 from modules import autocorrect, hints, updater, stats, config
 from modules.classes import *
-
+from modules.data import *
 
 bot = discord.Client(intents=discord.Intents.all())
 tree = discord.app_commands.CommandTree(bot)
@@ -18,22 +18,6 @@ with open(f"{DIR}/data/default_server_config.json", "r") as file:
     default_server_config = json.load(file)
 with open(f"{DIR}/data/default_user_config.json", "r") as file:
     default_user_config = json.load(file)
-
-# data loading
-servers = {}
-users = {}
-for img_path in os.listdir(f"{DIR}/data/servers"):
-    with open(f"{DIR}/data/servers/{img_path}", "r") as file:
-        servers[img_path[:-5]] = Server(**json.load(file))
-for img_path in os.listdir(f"{DIR}/data/users"):
-    with open(f"{DIR}/data/users/{img_path}", "r") as file:
-        users[img_path[:-5]] = User(**json.load(file))
-global_stats = {}
-global_leaderboard = {}
-with open(f"{DIR}/data/global/leaderboard.json", "r") as file:
-    global_leaderboard = json.load(file)
-with open(f"{DIR}/data/global/stats.json", "r") as file:
-    global_stats = json.load(file)
 
 @bot.event
 async def on_ready():
@@ -64,14 +48,6 @@ async def get_user_object(user_id, user_name):
     users[user_id].id = user_id
     users[user_id].username = user_name
     return users[user_id]
-
-async def save_server_state(server_id: str):
-    with open(f"{DIR}/data/servers/{server_id}.json", "w") as file:
-        json.dump(asdict(servers[server_id]), file)
-    with open(f"{DIR}/data/global/leaderboard.json", "w") as file:
-        json.dump(global_leaderboard, file)
-    with open(f"{DIR}/data/global/stats.json", "w") as file:
-        json.dump(global_stats, file)
 
 async def save_user_state(user_id: str):
     with open(f"{DIR}/data/users/{user_id}.json", "w") as file:
@@ -227,5 +203,8 @@ async def statistics(interaction:discord.Interaction, user: typing.Optional[disc
 async def cfg(interaction: discord.Interaction):
     server_id = str(interaction.guild.id)
     server = await get_server_object(server_id)
-    return config.Config_Button(server, ["test"])
+    view = config.Config_Button(server, interaction)
+    embed = config.generate_config_table(server)
+    await interaction.response.send_message(embed=embed, view=view) 
+    
 bot.run(TOKEN)
