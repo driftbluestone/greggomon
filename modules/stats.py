@@ -14,7 +14,6 @@ def increment_user_stats(server: Server, user: User, to_increment: list, leaderb
         user.stats[i]+=1
         if server.config["global_scoreboard"] and i == "correct_guess":
             leaderboard[user.id] = leaderboard.get(user.id, 0)+1
-        
 
 def generate_leaderboard(page: int, server: bool, user, users, srv: Server, global_leaderboard):
     if page == None: page = 1

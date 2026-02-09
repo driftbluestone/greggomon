@@ -27,6 +27,7 @@
         "image_skipped":0,
         "hint_sent":0
     },
+    "admins":[],
     "leaderboard":{},
     "guess_counter":0,
     "words_found":[],

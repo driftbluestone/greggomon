@@ -1,4 +1,5 @@
 import discord, json, pathlib
+from modules import permissions
 from modules.classes import *
 from modules.data import save_server_state
 DIR = pathlib.Path(__file__).parent.absolute()
@@ -48,6 +49,7 @@ class Config_Button(discord.ui.View):
             self.add_item(button)
     async def open_modal_button_callback(self, interaction: discord.Interaction):
         server = self.server
+        if await permissions.check_permission(interaction, server.admins): return await permissions.fail_permission_check(interaction)
         config = interaction.data["custom_id"]
         old_interaction = self.old_interaction
         name = configs[config][0]

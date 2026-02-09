@@ -1,0 +1,5 @@
+- build a better initialization system
+- migrate hints to hints.py
+- skips
+- permission system
+- image set system (to go with config system)

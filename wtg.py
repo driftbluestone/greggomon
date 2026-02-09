@@ -1,6 +1,6 @@
-import discord, pathlib, os, shutil, json, time, random, typing, math
+import discord, pathlib, json, time, random, typing
 from dataclasses import asdict, dataclass
-from modules import autocorrect, hints, updater, stats, config
+from modules import autocorrect, hints, updater, stats, config, permissions
 from modules.classes import *
 from modules.data import *
 
@@ -145,9 +145,10 @@ async def answer_logic(interaction: discord.Interaction, guess: str):
         increment_server.append("hint_sent")
         possible_hints = [x for x in server.answer_list if x not in server.words_found]
         if not possible_hints:
-            hint = f"{server.config["guesses_to_hint"]} incorrect Guesses, huh? Heres a hint.\nAll of the words in the item name have been found already."
+            hint = f"{server.config["guesses_to_hint"]} incorrect Guesses, huh? Heres a hint.\nAll of the words in the item name have been found already.\n"
         else:
-            hint = f"{server.config["guesses_to_hint"]} incorrect Guesses, huh? Heres a hint.\nOne of the words in the item name is: '{random.choice(possible_hints)}'"
+            hint = f"{server.config["guesses_to_hint"]} incorrect Guesses, huh? Heres a hint.\nOne of the words in the item name is: '{random.choice(possible_hints)}'\n"
+    user_guess = ""
     if (words_found == server.answer_list) and (answer_wrong == False):
         increment_server.append("correct_guess")
         increment_user.append("correct_guess")
@@ -161,22 +162,31 @@ async def answer_logic(interaction: discord.Interaction, guess: str):
     elif len(words_found) != 0 and server.config["show_correct_words_on_partial_correct"]:
         increment_server.append("incorrect_guess")
         increment_user.append("incorrect_guess")
-        await interaction.response.send_message(f"Not quite! Correct words: {words_found}\n{hint}", ephemeral=server.config["hide_user_guesses"])
+        if not server.config["hide_user_guesses"]:
+            user_guess = f"Your guess was: '{guess}'"
+        await interaction.response.send_message(f"Not quite! Correct words: {words_found}\n{hint}{user_guess}", ephemeral=server.config["hide_user_guesses"])
     else:
         increment_server.append("incorrect_guess")
         increment_user.append("incorrect_guess")
-        await interaction.response.send_message(f"Nope!\n{hint}", ephemeral=server.config["hide_user_guesses"])
+        if not server.config["hide_user_guesses"]:
+            user_guess = f"Your guess was: '{guess}'"
+        await interaction.response.send_message(f"Nope!\n{hint}{user_guess}", ephemeral=server.config["hide_user_guesses"])
     server.guesses[user_id] += 1
     stats.increment_server_stats(server, user, increment_server, global_stats)
     stats.increment_user_stats(server, user, increment_server, global_leaderboard)
     await save_server_state(server_id)
     await save_user_state(user_id)
 
-@tree.command(name="reveal",description="INCOMPLETE!! reveals the answer")
+@tree.command(name="reveal",description="Reveals the answer, requires Global Scoreboard config disabled.")
 async def reveal(interaction: discord.Interaction):
     server_id = str(interaction.guild.id)
     server: Server
     server = await get_server_object(server_id)
+    if server.config["global_scoreboard"]: return await interaction.response.send_message("Command disabled. Disable Global Scoreboard config to enable.", ephemeral=True)
+    if await permissions.check_permission(interaction, server.admins): return await permissions.fail_permission_check(interaction)
+    server.guesses = {}
+    server.guess_counter = 0
+    server.words_found = []
     await send_image(interaction, f"'{autocorrect.uppercase(server.answer)}' is correct!\nMoving on the the next image...", True)
 
 @tree.command(name="leaderboard",description="shows leaderboard")
@@ -199,12 +209,24 @@ async def statistics(interaction:discord.Interaction, user: typing.Optional[disc
     embed = discord.Embed(description = description)
     await interaction.response.send_message(embed=embed)
 
-@tree.command(name="config",description="Configures the bot")
+@tree.command(name="config",description="Configures the bot. Without admin simply displays the server config.")
 async def cfg(interaction: discord.Interaction):
     server_id = str(interaction.guild.id)
     server = await get_server_object(server_id)
-    view = config.Config_Button(server, interaction)
     embed = config.generate_config_table(server)
-    await interaction.response.send_message(embed=embed, view=view) 
+    if await permissions.check_permission(interaction, server.admins):
+        await interaction.response.send_message(embed=embed) 
+    else:
+        view = config.Config_Button(server, interaction)
+        await interaction.response.send_message(embed=embed, view=view) 
+
+@tree.command(name="promote",description="Promote/Demote a user to/from Admin status.")
+async def promote(interaction: discord.Interaction, user: discord.User):
+    server_id = str(interaction.guild.id)
+    server: Server = await get_server_object(server_id)
+    # if await permissions.check_permission(interaction, server.admins): return await permissions.fail_permission_check(interaction)
+    await permissions.promote(interaction, user, server)
+    
+    
     
 bot.run(TOKEN)

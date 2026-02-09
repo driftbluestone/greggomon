@@ -11,6 +11,7 @@ class Server:
     embed: int
     channel: int
     stats: dict
+    admins: list
     leaderboard: dict
     guess_counter: int
     words_found: list
