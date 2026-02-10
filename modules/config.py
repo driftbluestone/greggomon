@@ -44,34 +44,35 @@ class Config_Button(discord.ui.View):
         self.server: Server = server
         self.old_interaction: discord.Interaction = old_interaction
         for config, value in configs.items():
-            button = discord.ui.Button(label = value[0], style=discord.ButtonStyle.primary, custom_id=config)
+
+            buttonstyle = discord.ButtonStyle.primary
+            if value["type"] == "bool" and server.config[config]: buttonstyle = discord.ButtonStyle.success
+            elif value["type"] == "bool" and not server.config[config]: buttonstyle = discord.ButtonStyle.danger
+
+            button = discord.ui.Button(label = value["display_name"], style=buttonstyle, custom_id=config)
             button.callback = self.open_modal_button_callback
             self.add_item(button)
+    # function that is run when button is pressed
     async def open_modal_button_callback(self, interaction: discord.Interaction):
         server = self.server
         if await permissions.check_permission(interaction, server.admins): return await permissions.fail_permission_check(interaction)
         config = interaction.data["custom_id"]
         old_interaction = self.old_interaction
-        name = configs[config][0]
-        ranges = {}
-        for k, v in configs.items():
-            ranges[k] = v[1]
+        current_config = configs[config]
         
-        if ranges[config] == "bool":
+        if current_config["type"] == "bool":
             server.config[config] = not server.config[config]
             await interaction.response.defer(ephemeral=True, thinking=False)
             embed = generate_config_table(server)
             view = Config_Button(server, old_interaction)
             await update_config_embed(server, old_interaction, embed, view)
-        elif ranges[config] == "list":
+        elif current_config["type"] == "special":
             embed = generate_image_set_table(server)
             view = Image_Sets(server, old_interaction)
             await interaction.response.defer(ephemeral=True, thinking=False)
             await old_interaction.edit_original_response(embed=embed, view=view)
         else:
-            min_max_values = ranges[config]
-            if ranges[config] == "varies" or ranges[config][1] == "varies": min_max_values = get_minmax_ranges(server, config)
-            await interaction.response.send_modal(answer_input(server, old_interaction, config, name, min_max_values))
+            await interaction.response.send_modal(answer_input(server, old_interaction, config, current_config["display_name"], get_minmax_ranges(server, config)))
             
 class Image_Sets(discord.ui.View):
     def __init__(self, server, old_interaction):
@@ -84,6 +85,7 @@ class Image_Sets(discord.ui.View):
             self.add_item(button)
     async def open_modal_button_callback(self, interaction: discord.Interaction):
         server = self.server
+        if await permissions.check_permission(interaction, server.admins): return await permissions.fail_permission_check(interaction)
         old_interaction = self.old_interaction
         button = interaction.data["custom_id"]
         if button == "back":
@@ -94,6 +96,7 @@ class Image_Sets(discord.ui.View):
         if button not in server.config["image_sets"]:
             server.config["image_sets"].append(button)
         else:
+            if len(server.config["image_sets"]) == 1: return await interaction.response.send_message("You must have at least one active image set.",ephemeral=True)
             server.config["image_sets"].remove(button)
         embed = generate_image_set_table(server)
         view = Image_Sets(server, old_interaction)
@@ -105,27 +108,34 @@ async def update_config_embed(server, old_interaction, embed, view):
     
     await old_interaction.edit_original_response(embed=embed, view=view) 
 
-# outsource this to a json later, somehow
 def get_minmax_ranges(server, config):
-    if config == "user_guess_limit":
-        if server.config["universal_guess_limit"]:
-            min_value = 0
-        else:
-            min_value = 1
-        if server.config["guesses_to_hint"] > 5:
-            max_value = 5
-        else:
-            max_value = server.config["guesses_to_hint"]-1
-    elif config == "time_to_primary_skip":
-        min_value = 5
-        max_value = server.config["time_to_secondary_skip"]-1
-    elif config == "time_to_secondary_skip":
-        min_value = server.config["time_to_primary_skip"]+1
-        max_value = 1440
-    elif config == "guesses_to_hint":
-        min_value = server.config["user_guess_limit"]+1
-        max_value = 10000
-    return [min_value, max_value]
+    min_max_bound = []
+    bounds = ["lower_bound", "upper_bound"]
+    for bound in bounds:
+        if type(config[bound]) == int:
+            bound_value = config[bound]
+        elif type(config[bound]) == dict:
+            values = []
+            for limit in config[bound].keys():
+                if limit == "must_be_below":
+                    for value in config[bound]:
+                        if type(value) == int:
+                            values.append(value)
+                        else:
+                            values.append(server.config[value]-1)
+                elif limit == "must_be_above":
+                    for value in config[bound]:
+                        if type(value) == int:
+                            values.append(value)
+                        else:
+                            values.append(server.config[value]+1)
+            if bound == "lower_bound":
+                bound_value = min(values)
+            elif bound == "upper_bound":
+                bound_value = max(values)
+        min_max_bound.append(bound_value)
+    return min_max_bound
+    
 
 def generate_config_table(server):
     description = "### Config\n"
@@ -134,9 +144,9 @@ def generate_config_table(server):
         image.append(image_sets[i])
     for k in configs.keys():
         if not k == "image_sets":
-            description+=f"{configs[k][0]}: {server.config[k]}\n"
+            description+=f"{configs[k]["display_name"]}: {server.config[k]}\n"
         else:
-            description+=f"{configs[k][0]}: {image}\n"
+            description+=f"{configs[k]["display_name"]}: {image}\n"
     return discord.Embed(description=description)
 
 def generate_image_set_table(server):

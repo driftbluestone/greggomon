@@ -1,15 +1,89 @@
 {
-    "max_guess_length":["Max Guess Length",[75, 150]],
-    "universal_guess_limit":["Universal Guess Limit","bool"],
-    "user_guess_limit":["User Guess Limit","varies"],
-    "enable_skip":["Enable Skips","bool"],
-    "time_to_primary_skip":["Time to Primary Skip",[5, "varies"]],
-    "time_to_secondary_skip":["Time to Secondary Skip",[10, "varies"]],
-    "require_used_all_guesses_to_skip":["Require Used All Guesses to Skip","bool"],
-    "guesses_to_hint":["Guesses to Hint","varies"],
-    "image_sets":["Image Sets","list"],
-    "hide_user_guesses":["Hide User Guesses","bool"],
-    "show_correct_words_on_partial_correct":["Show Correct Words if Partically correct","bool"],
-    "at_user_in_server_leaderboard":["@ Users in Server Leaderboards and Statistics","bool"],
-    "global_scoreboard":["Global Scoreboard","bool"]
+    "max_guess_length":{
+        "display_name":"Max Guess Length",
+        "type":"int",
+        "default_value":75,
+        "lower_bound":75,
+        "upper_bound":150
+    },
+    "universal_guess_limit":{
+        "display_name":"Universal Guess Limit",
+        "type":"int",
+        "default_value":0,
+        "lower_bound":{
+            "must_be_above":["user_guess_limit","guesses_to_hint"]
+        },
+        "upper_bound":15
+    },
+    "user_guess_limit":{
+        "display_name":"User Guess Limit",
+        "type":"int",
+        "default_value":3,
+        "lower_bound":1,
+        "upper_bound":{
+            "must_be_below":["guesses_to_hint", 5]
+        }
+    },
+    "time_to_primary_skip":{
+        "display_name":"Time to 1st Skip",
+        "type":"int",
+        "default_value":10,
+        "lower_bound":5,
+        "upper_bound":{
+            "must_be_below":["time_to_secondary_skip"]
+        }
+    },
+    "time_to_secondary_skip":{
+        "display_name":"Time to 2nd Skip",
+        "type":"int",
+        "default_value":30,
+        "lower_bound":{
+            "must_be_above":["time_to_primary_skip", 10]
+        },
+        "upper_bound":1440
+    },
+    "guesses_to_hint":{
+        "display_name":"Guesses to Hint",
+        "type":"int",
+        "default_value":10,
+        "lower_bound":{
+            "must_be_above":["user_guess_limit", 5]
+        },
+        "upper_bound":10000
+    },
+    "image_sets":{
+        "display_name":"Image Sets",
+        "type":"special",
+        "default_value":["vanilla"]
+    },
+    "enable_skip":{
+        "display_name":"Enable Skipping",
+        "type":"bool",
+        "default_value":true
+    },
+    "hide_user_guesses":{
+        "display_name":"Hide User Guesses",
+        "type":"bool",
+        "default_value":false
+    },
+    "require_used_all_guesses_to_skip":{
+        "display_name":"Require Used All Guesses for 1st Skip",
+        "type":"bool",
+        "default_value":true
+    },
+    "show_correct_words_on_partial_correct":{
+        "display_name":"Show Correct Words When Partially Correct",
+        "type":"bool",
+        "default_value":true
+    },
+    "at_user_in_server_leaderboard":{
+        "display_name":"@ Users in Server Leaderboard",
+        "type":"bool",
+        "default_value":true
+    },
+    "global_scoreboard":{
+        "display_name":"Global Scoreboard",
+        "type":"bool",
+        "default_value":false
+    }
 }
