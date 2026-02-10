@@ -72,7 +72,7 @@ class Config_Button(discord.ui.View):
             await interaction.response.defer(ephemeral=True, thinking=False)
             await old_interaction.edit_original_response(embed=embed, view=view)
         else:
-            await interaction.response.send_modal(answer_input(server, old_interaction, config, current_config["display_name"], get_minmax_ranges(server, config)))
+            await interaction.response.send_modal(answer_input(server, old_interaction, config, current_config["display_name"], get_minmax_ranges(server, configs[config])))
             
 class Image_Sets(discord.ui.View):
     def __init__(self, server, old_interaction):
@@ -121,13 +121,13 @@ def get_minmax_ranges(server, config):
             values = []
             for limit in config[bound].keys():
                 if limit == "must_be_below":
-                    for value in config[bound]:
+                    for value in config[bound][limit]:
                         if type(value) == int:
                             values.append(value)
                         else:
                             values.append(server.config[value]-1)
                 elif limit == "must_be_above":
-                    for value in config[bound]:
+                    for value in config[bound][limit]:
                         if type(value) == int:
                             values.append(value)
                         else:

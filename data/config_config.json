@@ -56,15 +56,15 @@
         "type":"special",
         "default_value":["vanilla"]
     },
-    "enable_skip":{
-        "display_name":"Enable Skipping",
-        "type":"bool",
-        "default_value":true
-    },
     "hide_user_guesses":{
         "display_name":"Hide User Guesses",
         "type":"bool",
         "default_value":false
+    },
+    "enable_skip":{
+        "display_name":"Enable Skipping",
+        "type":"bool",
+        "default_value":true
     },
     "require_used_all_guesses_to_skip":{
         "display_name":"Require Used All Guesses for 1st Skip",
