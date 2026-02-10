@@ -22,7 +22,7 @@ def generate_leaderboard(page: int, server: bool, user, users, srv: Server, glob
         option = "Server"
     else:
         data = global_leaderboard
-        option = "global"
+        option = "Global"
     if server: use_at = srv.config["at_user_in_server_leaderboard"]
     else: use_at = False
     if len(data) == 0: return discord.Embed(description="No leaderboard to display.")

@@ -19,10 +19,15 @@ with open(f"{DIR}/../data/global/leaderboard.json", "r") as file:
 with open(f"{DIR}/../data/global/stats.json", "r") as file:
     global_stats = json.load(file)
 
-async def save_server_state(server_id: str):
+async def save_server_state(server_id: str, save_global: bool = False):
     with open(f"{DIR}/../data/servers/{server_id}.json", "w") as file:
         json.dump(asdict(servers[server_id]), file)
-    with open(f"{DIR}/../data/global/leaderboard.json", "w") as file:
-        json.dump(global_leaderboard, file)
-    with open(f"{DIR}/../data/global/stats.json", "w") as file:
-        json.dump(global_stats, file)
+    if save_global:
+        with open(f"{DIR}/../data/global/leaderboard.json", "w") as file:
+            json.dump(global_leaderboard, file)
+        with open(f"{DIR}/../data/global/stats.json", "w") as file:
+            json.dump(global_stats, file)
+
+async def save_user_state(user_id: str):
+    with open(f"{DIR}/../data/users/{user_id}.json", "w") as file:
+        json.dump(asdict(users[user_id]), file)

@@ -1,20 +1,6 @@
 {
     "id":"",
-    "config":{
-        "max_guess_length":75,
-        "universal_guess_limit":0,
-        "user_guess_limit":3,
-        "enable_skip":true,
-        "time_to_primary_skip":10,
-        "time_to_secondary_skip":30,
-        "require_used_all_guesses_to_skip":1,
-        "guesses_to_hint":5,
-        "image_sets":["vanilla"],
-        "hide_user_guesses":false,
-        "show_correct_words_on_partial_correct":true,
-        "at_user_in_server_leaderboard":true,
-        "global_scoreboard":true
-    },
+    "config":{},
     "answer":"",
     "image_link":"",
     "answer_list":[],
