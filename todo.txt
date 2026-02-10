@@ -3,3 +3,4 @@
 - skips
 - permission system
 - image set system (to go with config system)
+- move the global stats saving to a seperate function or give it a boolean control

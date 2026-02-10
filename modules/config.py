@@ -80,7 +80,10 @@ class Image_Sets(discord.ui.View):
         self.server: Server = server
         self.old_interaction: discord.Interaction = old_interaction
         for set, title in image_sets.items():
-            button = discord.ui.Button(label = title, style=discord.ButtonStyle.primary, custom_id=set)
+            if set in server.config["image_sets"]: buttonstyle = discord.ButtonStyle.success
+            else: buttonstyle = discord.ButtonStyle.danger
+            if set == "back": buttonstyle = discord.ButtonStyle.primary
+            button = discord.ui.Button(label = title, style=buttonstyle, custom_id=set)
             button.callback = self.open_modal_button_callback
             self.add_item(button)
     async def open_modal_button_callback(self, interaction: discord.Interaction):
@@ -136,7 +139,6 @@ def get_minmax_ranges(server, config):
         min_max_bound.append(bound_value)
     return min_max_bound
     
-
 def generate_config_table(server):
     description = "### Config\n"
     image = []
@@ -155,4 +157,3 @@ def generate_image_set_table(server):
         description+=f"- {image_sets[i]}\n"
 
     return discord.Embed(description=description)
-            

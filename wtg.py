@@ -227,6 +227,4 @@ async def promote(interaction: discord.Interaction, user: discord.User):
     # if await permissions.check_permission(interaction, server.admins): return await permissions.fail_permission_check(interaction)
     await permissions.promote(interaction, user, server)
     
-    
-    
 bot.run(TOKEN)
