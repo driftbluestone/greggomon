@@ -1,18 +1,31 @@
 import discord, pathlib, json, time, random, typing
+from discord.ext import commands
 from modules import autocorrect, hints, updater, stats, config, permissions, image_logic, answer_input
 from modules.answer_logic import answer_logic
 from modules.updater import get_server_object, get_user_object
 from modules.classes import *
 from modules.data import *
 
-bot = discord.Client(intents=discord.Intents.all())
-tree = discord.app_commands.CommandTree(bot)
+#bot = discord.Client(intents=discord.Intents.all())
+class GTTBOT(commands.Bot):
+    def __init__(self):
+        super().__init__(
+            command_prefix=",",
+            intents=discord.Intents.all()
+        )
+
+    async def setup_hook(self):
+        await self.load_extension("cogs.commands")
+bot = GTTBOT()
+tree = bot.tree
+#tree = discord.app_commands.CommandTree(bot)
 DIR = pathlib.Path(__file__).parent.absolute()
 with open(f"{DIR}/TOKEN.txt", "r") as file:
     TOKEN = file.read()
 
 @bot.event
 async def on_ready():
+    # await load_test()
     # fix old answer buttons and update server classes if needed
     for server in servers.values():
         updater.server_updater(server)
@@ -28,6 +41,8 @@ async def on_ready():
         print(f"Error syncing commands: {exception}")
     print(f'Gregging it up as {bot.user}!')
 
+async def load_test():
+    await bot.load_extension("cogs.commands")
 @tree.command(name="image",description="Resends the previous image")
 async def image(interaction:discord.Interaction):
     await image_logic.send_image(interaction, "", False, bot)
