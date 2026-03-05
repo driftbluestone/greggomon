@@ -1,8 +1,19 @@
-import pathlib
+import pathlib, discord
+from discord.ext import commands
 from modules import updater, answer_input, data
 DIR = pathlib.Path(__file__).parent.absolute()
 with open(f"{DIR}/../TOKEN.txt", "r") as file:
     TOKEN = file.read()
+
+# Bot class from @wabwit
+class Bot(commands.Bot):
+    def __init__(self):
+        super().__init__(
+            command_prefix=",",
+            intents=discord.Intents.all()
+        )
+    async def setup_hook(self):
+        await self.load_extension("cogs.commands")
 
 async def on_ready(bot):
     # fix old answer buttons and update server classes if needed
